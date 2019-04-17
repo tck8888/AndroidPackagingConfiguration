@@ -3,12 +3,14 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.healthmudi.dia.androidpackagingconfiguration"
+        //applicationId "com.healthmudi.dia.androidpackagingconfiguration"
         minSdkVersion 24
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        flavorDimensions "1"
     }
     buildTypes {
         release {
@@ -16,6 +18,42 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        app_test {
+            applicationId "com.healthmudi.dia.androidpackagingconfiguration.test"
+            resValue "string", "app_name", "测试apk"
+            buildConfigField "String", "BASE_SERVER_URL", '"http://my/app/"'
+
+            manifestPlaceholders = [
+                    MTA_CHANNEL_VALUE: "app_test"]
+        }
+
+        my_app {
+            applicationId "com.healthmudi.dia.androidpackagingconfiguration"
+            resValue "string", "app_name", "正式apk"
+            buildConfigField "String", "BASE_SERVER_URL", '"http://my/app/"'
+
+            manifestPlaceholders = [
+                    MTA_CHANNEL_VALUE: "my_app"]
+        }
+
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def fileName = "${variant.versionName}_${variant.productFlavors[0].name}" + releaseTime() + ".apk"
+            def outFile = output.outputFile
+            if (outFile != null && outFile.name.endsWith('.apk')) {
+                outputFileName = fileName
+            }
+        }
+    }
+}
+
+//打包时间
+def releaseTime() {
+    return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC"))
 }
 
 dependencies {
